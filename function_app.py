@@ -3,7 +3,7 @@ from openai import OpenAI
 import logging
 import os
 
-app =func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+app =func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 @app.route(route="answernow")
 def answernow(req: func.HttpRequest) -> func.HttpResponse:
