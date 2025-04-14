@@ -14,7 +14,7 @@ def SecretGarden(req: func.HttpRequest) -> func.HttpResponse:
        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
         api_key=os.getenv("AZURE_OPENAI_API_KEY"),  
         api_version="2025-02-01-preview"
-)
+    )
 
     bot_role = req.get("bot_role", "You are a helpful assistant.")
     words_limit = req.get("words_limit", 100)
