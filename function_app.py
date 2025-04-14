@@ -1,5 +1,7 @@
 import azure.functions as func
+from openai import AzureOpenAI
 import logging
+import os
 
 app =func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -7,19 +9,26 @@ app =func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 def SecretGarden(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+    client = AzureOpenAI(
+       azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"),  
+        api_version="2025-02-01-preview"
+)
+
+    bot_role = req.get("bot_role", "You are a helpful assistant.")
+    words_limit = req.get("words_limit", 100)
+    prompt = req.get("prompt", "What is the best food?")
+    temperature = req.get("temperature", 0.1)
+
+    response = client.responses.create(
+        model="gpt-4o",
+        instructions=bot_role,
+        input=prompt,
+        max_output_tokens=words_limit,
+        temperature=temperature)
+
+    return func.HttpResponse(
+            "This HTTP triggered function executed successfully." + response.output_text,
+            status_code=200
+    )
