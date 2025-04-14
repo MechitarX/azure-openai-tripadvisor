@@ -1,5 +1,5 @@
 import azure.functions as func
-from openai import AzureOpenAI
+from openai import OpenAI
 import logging
 import os
 
@@ -10,16 +10,17 @@ def SecretGarden(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
 
-    client = AzureOpenAI(
-       azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),  
-        api_version="2025-02-01-preview"
-    )
+    client = OpenAI()
+    #    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
+    #     api_key=os.getenv("OPENAI_API_KEY"),  
+    #     api_version="2025-02-01-preview"
+    # )
+    body = req.get_json()
 
-    bot_role = req.get("bot_role", "You are a helpful assistant.")
-    words_limit = req.get("words_limit", 100)
-    prompt = req.get("prompt", "What is the best food?")
-    temperature = req.get("temperature", 0.1)
+    bot_role = body.get("bot_role", "You are a helpful assistant.")
+    words_limit = body.get("words_limit", 100)
+    prompt = body.get("prompt", "What is the best food?")
+    temperature = body.get("temperature", 0.1)
 
     response = client.responses.create(
         model="gpt-4o",
