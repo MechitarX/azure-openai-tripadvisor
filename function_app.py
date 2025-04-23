@@ -1,20 +1,19 @@
 import azure.functions as func
-from openai import OpenAI
+from openai import AzureOpenAI
 import logging
 import os
 
-app =func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+
 
 @app.route(route="answernow")
 def answernow(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    client = AzureOpenAI(
+        api_version="2025-01-01-preview",
+        azure_endpoint="https://polbot.openai.azure.com/",
+        api_key="Auyd5BJFBhGfjvSvKeln4q27SseKhcoYuEFxmDJLHKZm5f3ge48DJQQJ99BDACE1PydXJ3w3AAABACOGgSMT",
+    )
 
-
-    client = OpenAI()
-    #    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
-    #     api_key=os.getenv("OPENAI_API_KEY"),  
-    #     api_version="2025-02-01-preview"
-    # )
     body = req.get_json()
 
     bot_role = body.get("bot_role", "You are a helpful assistant.")
@@ -23,13 +22,14 @@ def answernow(req: func.HttpRequest) -> func.HttpResponse:
     temperature = body.get("temperature", 0.1)
 
     response = client.responses.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         instructions=bot_role,
         input=prompt,
         max_output_tokens=words_limit,
-        temperature=temperature)
+        temperature=temperature,
+    )
 
     return func.HttpResponse(
-            "This HTTP triggered function executed successfully." + response.output_text,
-            status_code=200
+        response.output[0].content[0].text,
+        status_code=200,
     )
